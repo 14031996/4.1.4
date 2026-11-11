@@ -9,7 +9,7 @@ type ButtonProps = {
   disabled?: boolean;
   classNames?: string[];
   type?: "button" | "submit" | "reset";
-  onClick: MouseEventHandler<HTMLButtonElement>;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
 };
 
 export const Button = ({

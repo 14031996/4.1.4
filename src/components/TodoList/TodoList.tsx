@@ -4,45 +4,40 @@ import { AddEditTaskModal } from "../AddEditTaskModal/AddEditTaskModal";
 import { Button } from "../../ui/button/Button";
 import { DeleteModal } from "../DeleteModal/DeleteModal";
 import { TaskCard } from "../TaskCard/TaskCard";
-import { taskList } from "../../serverData/taskList";
-import { useState } from "react";
+import { useTypedDispatch, useTypedSelector } from "../../hooks/redux";
+import {
+  openAddModal,
+  openEditModal,
+  openDeleteModal,
+  closeModals,
+  deleteTask,
+} from "../../store/reducers/TaskSlice";
 
 export const TodoList = () => {
-  const [showAddEditModal, setShowAddEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [tasks, setTasks] = useState(taskList);
+  const dispatch = useTypedDispatch();
+
+  const { tasks, showAddEditModal, showDeleteModal, selectedTaskId } =
+    useTypedSelector((state) => state.tasks);
 
   const handleClickOpenModal = () => {
-    setSelectedTaskId(null);
-    setShowAddEditModal(true);
+    dispatch(openAddModal());
   };
+
   const handleClickCloseModal = () => {
-    setSelectedTaskId(null);
-    setShowAddEditModal(false);
+    dispatch(closeModals());
   };
 
   const handleClickEditTask = (id: string) => {
-    console.log(id);
-    if (id) {
-      setSelectedTaskId(id);
-      setShowAddEditModal(true);
-    }
+    dispatch(openEditModal(id));
   };
 
   const handleClickDeleteTaskModal = (id: string) => {
-    setShowDeleteModal(true);
-    setSelectedTaskId(id);
-  };
-
-  const handleClickCloseDeleteModal = () => {
-    setShowDeleteModal(false);
-    setSelectedTaskId(null);
+    dispatch(openDeleteModal(id));
   };
 
   const handleClickDeleteTask = (id: string) => {
-    setTasks(tasks.filter((task) => task.id !== id));
-    setShowDeleteModal(false);
+    dispatch(deleteTask(id));
+    dispatch(closeModals());
   };
 
   return (
@@ -50,15 +45,18 @@ export const TodoList = () => {
       <div className={Style["page-wrapper"]}>
         <div className={Style["top-title"]}>
           <h2>Список задач</h2>
+
           <Button
             title="Добавить задачу"
             icon={<Add />}
             onClick={handleClickOpenModal}
           />
         </div>
+
         <div className={Style["task-container"]}>
           {tasks.map((task) => (
             <TaskCard
+              key={task.id}
               task={task}
               onEdit={handleClickEditTask}
               onDelete={handleClickDeleteTaskModal}
@@ -66,18 +64,19 @@ export const TodoList = () => {
           ))}
         </div>
       </div>
+
       {showAddEditModal && (
         <AddEditTaskModal
           onClose={handleClickCloseModal}
           selectedTaskId={selectedTaskId}
-          setTasks={setTasks}
         />
       )}
-      {showDeleteModal && (
+
+      {showDeleteModal && selectedTaskId !== null && (
         <DeleteModal
-          onClose={handleClickCloseDeleteModal}
+          onClose={handleClickCloseModal}
           handleClickDeleteTask={handleClickDeleteTask}
-          selectedTaskId={selectedTaskId || ""}
+          selectedTaskId={selectedTaskId}
         />
       )}
     </>
